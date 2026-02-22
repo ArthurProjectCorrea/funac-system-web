@@ -1,21 +1,22 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 import { toast } from 'sonner';
 
-export function LogoutButton({
-  children,
-  messages,
-}: {
-  children?: React.ReactNode;
-  messages?: { success: string; error: string; loading?: string };
-}) {
+// static text for logout button
+const text = {
+  logout: 'Logout',
+  signingOut: 'Saindo…',
+  success: 'Desconectado',
+  error: 'Falha ao desconectar',
+} as const;
+
+export function LogoutButton() {
   const router = useRouter();
-  const pathname = usePathname();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -24,19 +25,17 @@ export function LogoutButton({
     const { error } = await supabase.auth.signOut();
     setLoading(false);
     if (error) {
-      toast.error(messages?.error || 'Error signing out');
+      toast.error(text.error);
       return;
     }
-    toast.success(messages?.success || 'Signed out');
+    toast.success(text.success);
     // after sign out redirect to login page
-    const parts = pathname.split('/').filter(Boolean);
-    const locale = parts[0] || '';
-    router.push(`/${locale}/login`);
+    router.push('/login');
   };
 
   return (
     <Button onClick={handleLogout} variant="outline" disabled={loading}>
-      {loading ? messages?.loading || 'Signing out…' : children || 'Logout'}
+      {loading ? text.signingOut : text.logout}
     </Button>
   );
 }

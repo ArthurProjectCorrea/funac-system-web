@@ -1,38 +1,23 @@
-import { match } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { defaultLocale, locales, type Locale } from '@/lib/i18n';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-function getLocale(request: NextRequest): Locale {
-  const headers = {
-    'accept-language': request.headers.get('accept-language') ?? '',
-  };
-  const languages = new Negotiator({ headers }).languages();
-  const matched = match(languages, [...locales], defaultLocale);
-  return matched ? (matched as Locale) : defaultLocale;
-}
-
-// middleware handles locale and authentication for private pages
+// middleware handles authentication for private pages
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   const { pathname } = request.nextUrl;
 
-  // expose the raw pathname to downstream server components via a header
-  response.headers.set('x-original-path', pathname);
+  // quick diagnostic log for redirects
+  console.log('[middleware] pathname=', pathname);
 
-  // redirect to locale-root if no locale prefix
-  const pathnameHasLocale = locales.some(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
-  );
-
-  if (!pathnameHasLocale) {
-    const locale = getLocale(request);
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locale}${pathname}`;
-    return NextResponse.redirect(url);
+  // expose the raw pathname to downstream server components via a cookie
+  // (response headers aren't available via `headers()` in some server components)
+  try {
+    response.cookies.set('x-original-path', pathname, { path: '/' });
+  } catch (e) {
+    // best-effort; if cookies API isn't available in this environment, continue
+    console.warn('[middleware] unable to set x-original-path cookie', e);
   }
 
   // create supabase server client using cookie helpers
@@ -56,12 +41,16 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const homePattern = new RegExp(`^/[^/]+/home`);
-  if (homePattern.test(pathname) && !user) {
-    const parts = pathname.split('/').filter(Boolean);
-    const locale = parts[0] || defaultLocale;
+  console.log('[middleware] user=', user ? user.id : 'anonymous');
+
+  // allow login page through to avoid redirect loops
+  if (pathname.startsWith('/login')) {
+    console.log('[middleware] allowing login path, skipping auth redirect');
+    return response;
+  }
+  if (pathname.startsWith('/home') && !user) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = `/${locale}/login`;
+    loginUrl.pathname = `/login`;
     return NextResponse.redirect(loginUrl);
   }
 
