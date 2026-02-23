@@ -109,10 +109,16 @@ export function AppSidebar({
       new Set(accesses.map((a: any) => a.screen_id)),
     );
 
-    const screens = (authData.screens || []).filter(
-      (s: any) =>
-        screenIds.includes(s.id) && (s.sidebar === undefined || s.sidebar),
-    );
+    const permissionsByRoute = authData.permissionsByRoute || {};
+
+    const screens = (authData.screens || []).filter((s: any) => {
+      const visibleInSidebar = s.sidebar === undefined || s.sidebar;
+      const inAccessList = screenIds.includes(s.id);
+      const hasView = (permissionsByRoute[s.url] || []).includes('view');
+      // only include screens that are in the user's access list, meant for sidebar,
+      // and for which the user has the 'view' permission
+      return inAccessList && visibleInSidebar && hasView;
+    });
 
     const groupsMap = (authData.groups || []).reduce((acc: any, g: any) => {
       acc[g.id] = g;

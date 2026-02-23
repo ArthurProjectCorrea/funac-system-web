@@ -1,11 +1,7 @@
-'use client';
-
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import BackButton from '@/components/back-button';
 
 export default function Forbidden() {
-  const router = useRouter();
-
   return (
     <main className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="max-w-lg w-full text-center">
@@ -15,12 +11,7 @@ export default function Forbidden() {
         </p>
 
         <div className="flex gap-3 justify-center">
-          <button
-            onClick={() => router.back()}
-            className="inline-flex items-center px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-95"
-          >
-            Voltar
-          </button>
+          <BackButton />
 
           <Link
             href="/"
