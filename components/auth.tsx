@@ -6,7 +6,7 @@ import React, { createContext, useCallback, useContext, useState } from 'react';
 type AuthContextType = {
   authData: any | null;
   setAuthData: (d: any) => void;
-  createProfile: (payload: { full_name?: string }) => Promise<any>;
+  createProfile: (payload: { name?: string }) => Promise<any>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export function AuthProvider({
   }, []);
 
   const createProfile = useCallback(
-    async (payload: { full_name?: string }) => {
+    async (payload: { name?: string }) => {
       if (!authData?.user?.id) throw new Error('No authenticated user');
       const res = await fetch('/api/profile', {
         method: 'POST',

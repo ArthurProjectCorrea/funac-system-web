@@ -128,9 +128,9 @@ export function AppSidebar({
     const grouped: Record<string, any[]> = {};
     const noGroup: any[] = [];
     screens.forEach((s: any) => {
-      if (s.group_id) {
-        grouped[s.group_id] = grouped[s.group_id] || [];
-        grouped[s.group_id].push(s);
+      if (s.screen_group_id) {
+        grouped[s.screen_group_id] = grouped[s.screen_group_id] || [];
+        grouped[s.screen_group_id].push(s);
       } else {
         noGroup.push(s);
       }

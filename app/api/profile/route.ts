@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { user_id, full_name } = body;
+    const { user_id, name } = body;
     if (!user_id)
       return NextResponse.json(
         { error: 'user_id is required' },
@@ -14,8 +14,8 @@ export async function POST(req: Request) {
 
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from('profile')
-      .insert({ user_id, full_name })
+      .from('profiles')
+      .insert({ user_id, name })
       .select()
       .single();
 

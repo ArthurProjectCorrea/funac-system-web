@@ -2,29 +2,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function buildAuthData(supabase: SupabaseClient, userId: string) {
-  // Load profile
+  // Load profile (now `profiles`)
   const { data: profile } = await supabase
-    .from('profile')
+    .from('profiles')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
 
-  // Load role_profile rows
+  // Load profile_positions rows (link users ↔ positions)
   const { data: roleRows } = await supabase
-    .from('role_profile')
-    .select('position')
+    .from('profile_positions')
+    .select('position_id')
     .eq('user_id', userId);
 
-  const positionIds = (roleRows || []).map((r: any) => r.position);
+  const positionIds = (roleRows || []).map((r: any) => r.position_id);
 
   // Fetch positions
   const { data: positions } = positionIds.length
-    ? await supabase.from('position').select('*').in('id', positionIds)
+    ? await supabase.from('positions').select('*').in('id', positionIds)
     : { data: [] };
 
   // Fetch accesses for these positions
   const { data: accesses } = positionIds.length
-    ? await supabase.from('access').select('*').in('position_id', positionIds)
+    ? await supabase.from('accesses').select('*').in('position_id', positionIds)
     : { data: [] };
 
   const screenIds = Array.from(
@@ -35,14 +35,14 @@ export async function buildAuthData(supabase: SupabaseClient, userId: string) {
   );
 
   const { data: screens } = screenIds.length
-    ? await supabase.from('screen').select('*').in('id', screenIds)
+    ? await supabase.from('screens').select('*').in('id', screenIds)
     : { data: [] };
 
   const { data: permissions } = permissionIds.length
-    ? await supabase.from('permission').select('*').in('id', permissionIds)
+    ? await supabase.from('permissions').select('*').in('id', permissionIds)
     : { data: [] };
 
-  const { data: groups } = await supabase.from('group_screen').select('*');
+  const { data: groups } = await supabase.from('screen_group').select('*');
 
   const screensMap = (screens || []).reduce(
     (acc: any, s: any) => {
