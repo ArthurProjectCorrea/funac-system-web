@@ -119,6 +119,24 @@ npm run init         # primeiros passos: nome, versão, changelog, primeiro comm
 
 ---
 
+## Supabase (comandos úteis)
+
+Use os comandos abaixo para ligar este repositório a um projeto Supabase, criar uma nova migration e aplicar alterações ao banco local/remote:
+
+```bash
+supabase link --project-ref tjvalwzbpmfnaocqsmur
+supabase migration new create_auto_profile
+supabase db push
+```
+
+1. `supabase link` — associa a sua máquina ao projeto Supabase (substitua o `project-ref` se necessário).
+2. `supabase migration new` — cria uma nova migration vazia com o nome informado (`create_auto_profile`).
+3. `supabase db push` — aplica as migrations ao banco configurado (local ou remote conforme `supabase` CLI config).
+
+Execute esses comandos a partir da raiz do projeto.
+
+---
+
 ## Releases automatizados
 
 O repositório usa **semantic-release** na CI: a cada push em `main` (após o workflow de CI passar), o job de release pode criar tags, GitHub Release e atualizar o `CHANGELOG.md`. A publicação no npm está **desativada** por padrão (`release.config.js`).

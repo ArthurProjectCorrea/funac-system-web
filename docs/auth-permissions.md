@@ -20,7 +20,7 @@ Este documento descreve, em detalhes, como o projeto implementa autenticação e
 - `permissions` — nomes de ações, por exemplo `view`, `create`, etc.
 - `accesses` — join entre `position_id`, `screen_id`, `permission_id` que determina quais posições têm determinada permissão sobre determinada tela.
 
-As migrações relevantes estão em `supabase/migrations/` (ver `20260224120000_initial_schema.sql` e demais historicamente relacionadas como `20260222123000_update_screen_table.sql`, `20260222124500_add_group_screen_and_screen_cols.sql`).
+As migrações relevantes estão em `supabase/migrations/` (ver `20260224120000_initial_schema.sql` que já contém o novo esquema com módulos, permissions, etc. e, historicamente, `20260222123000_update_screen_table.sql`, `20260222124500_add_group_screen_and_screen_cols.sql`).
 
 ## Fluxo de montagem de dados de autenticação (server)
 
@@ -35,7 +35,7 @@ Arquivo central: `app/(private)/layout.tsx` (server component)
    - Carrega `accesses` para essas posições.
    - Carrega `screens` e `permissions` referenciados por `accesses`.
    - Carrega `screen_group` para agrupar sidebar.
-   - Monta um objeto `authData` com campos úteis: `user`, `profile`, `positions` (resumido), `positions_meta` (linhas completas), `accesses` (enriquecido com screen/permission), `screens`, `permissions`, `groups`, e entradas `access_<positionId>` para acesso por posição.
+   - Monta um objeto `authData` com campos úteis: `user`, `profile`, `positions` (resumido), `positions_meta` (linhas completas), `accesses` (enriquecido com screen/permission), `screens`, `permissions`, `modules`, e entradas `access_<positionId>` para acesso por posição.
 4. `authData` é passado ao cliente via `AuthProvider` e usado pelo `AppSidebar` para renderizar navegação dinâmica.
 
 O layout faz `console.log('AUTH_DATA', ...)` para facilitar observabilidade no servidor.

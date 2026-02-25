@@ -42,7 +42,7 @@ export async function buildAuthData(supabase: SupabaseClient, userId: string) {
     ? await supabase.from('permissions').select('*').in('id', permissionIds)
     : { data: [] };
 
-  const { data: groups } = await supabase.from('screen_group').select('*');
+  const { data: modules } = await supabase.from('modules').select('*');
 
   const screensMap = (screens || []).reduce(
     (acc: any, s: any) => {
@@ -104,7 +104,7 @@ export async function buildAuthData(supabase: SupabaseClient, userId: string) {
     accesses: enrichedAccesses,
     screens: screens ?? [],
     permissions: permissions ?? [],
-    groups: groups ?? [],
+    modules: modules ?? [],
     permissionsByRoute,
     ...accessByPosition,
   };

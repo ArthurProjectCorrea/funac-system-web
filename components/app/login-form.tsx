@@ -49,14 +49,24 @@ export function LoginForm({
     const password = form.password.value;
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setLoading(false);
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      setLoading(false);
 
-    if (authError) {
-      toast.error(text.loginError);
+      if (authError) {
+        toast.error(text.loginError);
+        return;
+      }
+    } catch (networkError) {
+      // could be CORS issue, missing env or connectivity problem
+      console.error('login network error', networkError, {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      });
+      setLoading(false);
+      toast.error('Erro de conexão. Tente novamente.');
       return;
     }
 

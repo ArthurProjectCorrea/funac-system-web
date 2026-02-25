@@ -120,25 +120,26 @@ export function AppSidebar({
       return inAccessList && visibleInSidebar && hasView;
     });
 
-    const groupsMap = (authData.groups || []).reduce((acc: any, g: any) => {
-      acc[g.id] = g;
+    // modules map replaces previous group_screen functionality
+    const modulesMap = (authData.modules || []).reduce((acc: any, m: any) => {
+      acc[m.id] = m;
       return acc;
     }, {});
 
     const grouped: Record<string, any[]> = {};
-    const noGroup: any[] = [];
+    const noModule: any[] = [];
     screens.forEach((s: any) => {
-      if (s.screen_group_id) {
-        grouped[s.screen_group_id] = grouped[s.screen_group_id] || [];
-        grouped[s.screen_group_id].push(s);
+      if (s.module_id) {
+        grouped[s.module_id] = grouped[s.module_id] || [];
+        grouped[s.module_id].push(s);
       } else {
-        noGroup.push(s);
+        noModule.push(s);
       }
     });
 
     const items: any[] = [];
 
-    noGroup.forEach((s: any) => {
+    noModule.forEach((s: any) => {
       items.push({
         title: s.name,
         url: s.url || '#',
@@ -147,14 +148,14 @@ export function AppSidebar({
       });
     });
 
-    Object.keys(grouped).forEach((gid) => {
-      const g = groupsMap[gid];
-      const screensForGroup = grouped[gid];
+    Object.keys(grouped).forEach((mid) => {
+      const m = modulesMap[mid];
+      const screensForModule = grouped[mid];
       items.push({
-        title: g?.name || `Group ${gid}`,
-        icon: (LucideIcons as any)[g?.icon],
+        title: m?.name || `Module ${mid}`,
+        icon: (LucideIcons as any)[m?.icon],
         isActive: false,
-        items: screensForGroup.map((s: any) => ({
+        items: screensForModule.map((s: any) => ({
           title: s.name,
           url: s.url || '#',
           sidebar: s.sidebar,

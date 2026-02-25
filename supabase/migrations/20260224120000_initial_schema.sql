@@ -1,4 +1,13 @@
--- initial_schema migration: create core tables and profile trigger
+-- initial_schema migration: drop legacy tables then create core tables and profile trigger
+
+-- remove old/legacy tables if they still exist
+DROP TABLE IF EXISTS public.group_screen;
+DROP TABLE IF EXISTS public.role_profile;
+DROP TABLE IF EXISTS public.access;
+DROP TABLE IF EXISTS public.screen;
+DROP TABLE IF EXISTS public.profile;
+
+-- departments
 
 -- departments
 create table if not exists public.departments (
@@ -9,53 +18,55 @@ create table if not exists public.departments (
   updated_at timestamptz default now() not null
 );
 
--- positions
+-- positions (cargos)
 create table if not exists public.positions (
   id serial primary key,
-  department_id integer not null references public.departments(id) on delete cascade,
+  department_id integer references public.departments(id) on delete cascade,
   name varchar not null,
+  is_global boolean not null default false,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
 
--- permissions
+-- permissions (ações)
 create table if not exists public.permissions (
   id serial primary key,
   name varchar not null,
   created_at timestamptz default now() not null,
-  updated_at timestamptz default now() not null
+  updated_at timestamptz default now() not null,
+  unique(name)
 );
 
--- screen_group
-create table if not exists public.screen_group (
+-- modules (agrupamento das telas)
+create table if not exists public.modules (
   id serial primary key,
   name varchar not null,
   icon varchar,
-  open boolean default false not null,
+  sort_order integer not null default 0,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
 
--- screens
+-- screens (recursos do sistema)
 create table if not exists public.screens (
   id serial primary key,
   name varchar not null,
-  url varchar,
+  url varchar unique,
   icon varchar,
-  sidebar boolean default false not null,
-  screen_group_id integer references public.screen_group(id) on delete set null,
+  show_in_sidebar boolean not null default true,
+  module_id integer references public.modules(id) on delete set null,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
 
--- accesses
+-- accesses (RBAC de fato)
 create table if not exists public.accesses (
-  id serial primary key,
   position_id integer not null references public.positions(id) on delete cascade,
   screen_id integer not null references public.screens(id) on delete cascade,
   permission_id integer not null references public.permissions(id) on delete cascade,
   created_at timestamptz default now() not null,
-  updated_at timestamptz default now() not null
+  updated_at timestamptz default now() not null,
+  primary key (position_id, screen_id, permission_id)
 );
 
 -- profiles
@@ -68,7 +79,7 @@ create table if not exists public.profiles (
   primary key (user_id)
 );
 
--- profile_positions
+-- profile_positions replaces role_profile, links users to positions
 create table if not exists public.profile_positions (
   id serial primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -76,6 +87,7 @@ create table if not exists public.profile_positions (
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
+
 
 -- trigger function to populate profiles when a new auth user is created
 create or replace function public.handle_new_auth_user()
